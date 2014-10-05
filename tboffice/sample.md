@@ -70,7 +70,7 @@ function bar(b) {
 
 独立した段落として書く
 
-![キャプション](images/hoge.png)
+![アイコンのキャプション](img/icon.png)
 
 
 ### 注釈、リンク
