@@ -5,14 +5,17 @@
 - 筆者: @tboffice
 - ※この記事タイトルはサンプルです
 - Ansible入門記事
--- ansibleとは？
--- できること
--- ぺらいちplaybook
---- YAML
---- module
--- Best Practice入門
--- 既存システムからの置き換え
--- ここがヘンだよansible
+
+ - ansibleとは？
+ - できること
+ - ぺらいちplaybook
+
+   - YAML
+   - module
+ - Best Practice入門
+ - 既存システムからの置き換え
+ - ここがヘンだよansible
+
 - など
 
 ## こんな感じでタイトルと内容をざっくり書いてください
