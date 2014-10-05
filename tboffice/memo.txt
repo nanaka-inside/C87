@@ -1,0 +1,1 @@
+md2inao.pl --format=in_design sample.md | nkf -s > sample.shift-jis.txt 

@@ -1,0 +1,138 @@
+<SJIS-MAC>
+<ParaStyle:タイトル>タイトル：タイトル
+<ParaStyle:キャッチ>キャッチ：キャッチコピー
+<ParaStyle:本文>著者：@tboffice（著者名）
+<ParaStyle:本文>著者（ローマ字）：tboffice（著者名のローマ字表記）
+<ParaStyle:本文>Hello, World（本文）
+<ParaStyle:大見出し>大見出し（節）
+<ParaStyle:中見出し>中見出し（項）
+<ParaStyle:小見出し>小見出し（目）
+<ParaStyle:小見出し>参考
+<ParaStyle:半行アキ>
+<ParaStyle:箇条書き>・https://github.com/naoya/md2inao/blob/master/README.md
+<ParaStyle:小見出し>箇条書きは下記のようにかけるが記号はどちらかに統一したほうがよいとのこと
+<ParaStyle:半行アキ>
+<ParaStyle:箇条書き>・<ParaStyle:本文>箇条書き
+
+<ParaStyle:箇条書き2階層目>・箇条書き2階層目
+<ParaStyle:箇条書き2階層目>・箇条書き2階層目
+<ParaStyle:箇条書き2階層目>・箇条書き2階層目
+<ParaStyle:箇条書き>・<ParaStyle:本文>箇条書き
+
+<ParaStyle:箇条書き2階層目>・箇条書き2階層目
+<ParaStyle:箇条書き2階層目>・箇条書き2階層目
+<ParaStyle:箇条書き2階層目>・箇条書き2階層目
+<ParaStyle:小見出し>説明つき箇条書き（dt、dd）
+<ParaStyle:本文>Markdown の説明つき箇条書きには対応していないので、HTML でマークアップしてください、だそうです。
+<ParaStyle:半行アキ>
+<ParaStyle:箇条書き>・箇条書き
+<ParaStyle:箇条書き説明>箇条書きの説明文
+<ParaStyle:箇条書き>・箇条書き
+<ParaStyle:箇条書き説明>箇条書きの説明文
+<ParaStyle:小見出し>連番箇条書き（黒丸数字）
+<ParaStyle:半行アキ>
+<ParaStyle:箇条書き><CharStyle:丸文字><2776><CharStyle:>連番箇条書き
+<ParaStyle:箇条書き><CharStyle:丸文字><2777><CharStyle:>連番箇条書き
+<ParaStyle:箇条書き><CharStyle:丸文字><2778><CharStyle:>連番箇条書き
+<ParaStyle:小見出し>本文中のコードブロック
+<ParaStyle:半行アキ>
+<ParaStyle:箇条書き>・行頭半角スペース4つで字下げします
+<ParaStyle:半行アキ>
+<ParaStyle:リスト>function bar(b) {
+<ParaStyle:リスト>    alert(b);
+<ParaStyle:リスト>}
+<ParaStyle:半行アキ>
+<ParaStyle:箇条書き>・` も使える
+<ParaStyle:半行アキ>
+<ParaStyle:リスト>function bar(b) {
+<ParaStyle:リスト>    alert(b);
+<ParaStyle:リスト>}
+<ParaStyle:本文><CharStyle:コマンド><cstyle:上付き><fnStart:><pstyle:注釈><fnEnd:><cstyle:><CharStyle:>は黒地に白文字となり、見出しやコメント的に使えます。
+<ParaStyle:半行アキ>
+<ParaStyle:リスト><CharStyle:リストコメント> 見出し的に使う <CharStyle:>
+<ParaStyle:リスト>function bar(b) {
+<ParaStyle:リスト>    alert(b); <CharStyle:リストコメント> こんな風にコメントがつけられます <CharStyle:>
+<ParaStyle:リスト>}
+<ParaStyle:小見出し>本文中のコマンドブロック（WEB+DB PRESSは未使用）
+<ParaStyle:本文>先頭行を<CharStyle:コマンド>!!! cmd<CharStyle:>とすると、コマンドラインっぽく黒地に白文字になります。この場合の<CharStyle:コマンド><cstyle:上付き><fnStart:><pstyle:注釈><fnEnd:><cstyle:><CharStyle:>は、逆に白地に黒文字となります。
+<ParaStyle:半行アキ>
+<ParaStyle:リスト白文字><CharStyle:リストコメント白地黒文字> 見出し的に使う <CharStyle:>
+<ParaStyle:リスト白文字>$ command
+<ParaStyle:リスト白文字>bar <CharStyle:リストコメント白地黒文字> こんな風にコメントがつけられます <CharStyle:>
+<ParaStyle:小見出し>図の画像
+<ParaStyle:本文>独立した段落として書く
+<ParaStyle:半行アキ>
+<ParaStyle:リスト>![キャプション](images/hoge.png)
+<ParaStyle:小見出し>注釈、リンク
+<ParaStyle:本文>たとえば次のように書きます。
+<ParaStyle:半行アキ>
+<ParaStyle:リスト>[RubyMotion](http://rubymotion.com/)は、RubyでiOSアプリを作るれるツールです<CharStyle:リストコメント> 日本円で20,000円程度です。 <CharStyle:>。
+<ParaStyle:小見出し>表
+<ParaStyle:本文>HTMLでマークアップしてください。
+<ParaStyle:半行アキ>
+<ParaStyle:リスト><005C><table summary='表1::キャプション'<005C>>
+<ParaStyle:リスト>    <005C><tr<005C>>
+<ParaStyle:リスト>        <005C><th<005C>>列の説明1<005C></th<005C>>
+<ParaStyle:リスト>        <005C><th<005C>>列の説明2<005C></th<005C>>
+<ParaStyle:リスト>    <005C></tr<005C>>
+<ParaStyle:リスト>    <005C><tr<005C>>
+<ParaStyle:リスト>        <005C><td<005C>>内容1-1<005C></td<005C>>
+<ParaStyle:リスト>        <005C><td<005C>>内容2-1<005C></td<005C>>
+<ParaStyle:リスト>    <005C></tr<005C>>
+<ParaStyle:リスト>    <005C><tr<005C>>
+<ParaStyle:リスト>        <005C><td<005C>>内容1-2<005C></td<005C>>
+<ParaStyle:リスト>        <005C><td<005C>>内容2-2<005C></td<005C>>
+<ParaStyle:リスト>    <005C></tr<005C>>
+<ParaStyle:リスト><005C></table<005C>>
+<ParaStyle:小見出し>引用
+<ParaStyle:本文>引用は次のように書きます。
+<ParaStyle:半行アキ>
+<ParaStyle:リスト><005C>> 引用です。
+<ParaStyle:小見出し>注意事項
+<ParaStyle:本文>GitHub Flavored Markdownとは異なり、複数行に分けて書いても1行になります。
+<ParaStyle:半行アキ>
+<ParaStyle:リスト><005C>> 引
+<ParaStyle:リスト><005C>> 用
+<ParaStyle:リスト><005C>> です。
+<ParaStyle:小見出し>区切り線（<CharStyle:コマンド><005C><hr<005C>><CharStyle:>）
+<ParaStyle:半行アキ>
+<ParaStyle:リスト>---
+<ParaStyle:小見出し>コラム
+<ParaStyle:半行アキ>
+<ParaStyle:リスト><005C><div class='column'<005C>>
+<ParaStyle:リスト>#### コラムタイトル
+<ParaStyle:リスト>本文
+<ParaStyle:リスト>##### コラム小見出し
+<ParaStyle:リスト>本文
+<ParaStyle:リスト>##### コラム小見出し
+<ParaStyle:リスト>本文
+<ParaStyle:リスト><005C></div<005C>>
+<ParaStyle:小見出し>字下げ
+<ParaStyle:本文>段落行頭の字下げは手動です。全角スペースを入れてください。
+<ParaStyle:半行アキ>
+<ParaStyle:リスト>　こんにちは。伊藤です。
+<ParaStyle:小見出し>段落分け
+<ParaStyle:本文>段落分けをするには、空行（2連続の改行）を入れる必要があります。
+<ParaStyle:半行アキ>
+<ParaStyle:リスト>　こんにちは。伊藤です。
+<ParaStyle:リスト>
+<ParaStyle:リスト>　今号から、新連載を始めます。
+<ParaStyle:本文>ただし、行頭で全角スペースによりインデントされている場合のみ、空行がなくても段落分けされ、上記の空行を入れた場合と同じ出力になります。
+<ParaStyle:小見出し>文字記法
+<ParaStyle:本文>これまでの記法は段落全体を指定する段落スタイルでしたが、ここからは段落内の文中で使う文字スタイルです。
+<ParaStyle:小見出し>強調
+<ParaStyle:本文><CharStyle:太字>強調（ボールド）<CharStyle:>
+<ParaStyle:小見出し>イタリック
+<ParaStyle:本文><CharStyle:イタリック（変形斜体）>斜体（イタリック）<CharStyle:>
+<ParaStyle:小見出し>本文中のコードやコマンド、HTMLタグのエスケープ
+<ParaStyle:本文><CharStyle:コマンド>code or command<CharStyle:>
+<ParaStyle:本文>本文での解説中にHTMLを書きたい場合などのエスケープにもご利用ください。
+<ParaStyle:本文><CharStyle:コマンド><005C><a<005C>><CharStyle:>
+<ParaStyle:小見出し>ルビ
+<ParaStyle:本文><cr:1><crstr:ほかむら><cmojir:0>外村<cr:><crstr:><cmojir:>
+<ParaStyle:小見出し>上付き
+<ParaStyle:本文><CharStyle:上付き>ゴシックフォントで上付き。コラムなどでの注記で使用<CharStyle:><cp:Superscript>その場のフォントで上付き。n乗など数式で使用<cp:>
+<ParaStyle:小見出し>赤文字
+<ParaStyle:本文>編集者へのコメントなどでご利用ください。
+<ParaStyle:本文><CharStyle:赤字>赤文字<CharStyle:>
+<ParaStyle:本文><CharStyle:赤字>★<CharStyle:><CharStyle:赤字>☆<CharStyle:><CharStyle:赤字>□<CharStyle:><CharStyle:赤字>▲<CharStyle:>などの記号は、上記記法を用いずとも自動で赤字になります。
