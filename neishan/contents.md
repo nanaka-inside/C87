@@ -109,4 +109,70 @@ reduce: (key, {input values}) -> (key, output value)
  - ManyEyes http://www-01.ibm.com/software/analytics/many-eyes/
 また、GoogleではFusion TablesやMottion Graphなど、簡単にデータを可視化したり、アニメーションに対応したGraphなどを提供しています。
 
-## 
+## 2chスレッドデータで遊ぶ
+
+それでは、実際にオープンデータをMapReduceを用いて処理してみましょう。今回は、2ch スレッドデータを対象として、日本語のワードカウントをMRで行いたいと思います。各年で人気だったキーワードを探してみることが目的です。この中で、Hadoop MapReduceを使える言語はJavaだけはないこと、2つの関数を実装するだけで動作することを確認していきたいと思います。導入において、個人がMapReduceを使わなければならないほど、データを持っていないという話をしました。しかし、2ch スレッドデータは、2006年から2014年の間で圧縮後の合計で、1.7GBです。強力なマシンを持っているなら良いですが、一般的なノーパソ程度では刃が立ちませんね。そこで、MapReduceの出番になってくるわけです。閑話休題。今回のプログラムについてご紹介していきます。
+
+### mapプログラム
+
+Hadoop Streamingにおけるmapは、標準入力にデータが流れてくるだけです。そこから、(key, value)を出力すれば、mapプログラムは完成です。簡単そうですね。今回言語はpythonを選択しました。この記事を参考にしてもらうことで、皆さんのお好きな言語で試すことが可能です。2chということで、日本語の形態素解析が必要になります。詳細は省きますが、まずは日本語の辞書を作成します。
+
+http://sourceforge.jp/projects/igo/releases/
+から、igo-0.4.5.jarをダウンロードします。次に、
+http://sourceforge.net/projects/mecab/files/mecab-ipadic/2.7.0-20070801/
+から、mecab-ipadic-2.7.0-20070801.tar.gzをダウンロードし、以下の様に実行してください。
+
+```
+tar xvzf mecab-ipadic-2.7.0-20070801.tar.gz
+java -cp igo-0.4.5.jar net.reduls.igo.bin.BuildDic ipadic mecab-ipadic-2.7.0-20070801 EUC-JP
+```
+上記により、ipdicディレクトリに辞書ファイルが作成されます。次に、map.pyとして以下のようなスクリプトを作成します。
+
+```python:map.py
+# *-* coding: utf-8 *-*
+import sys
+import codecs
+from igo.Tagger import Tagger
+
+sys.stdin = codecs.getreader('utf-8')(sys.stdin)
+sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
+
+dic = '辞書ファイルのpath'
+tagger = Tagger(dic)
+
+
+for line in sys.stdin:
+  line.strip()
+  splited=line.split(u'\t',3)
+  subject=splited[2]
+  words = tagger.parse(subject)
+  for word in words:
+    if not u"名詞" in word.feature:
+      continue
+    print "%s\t1" % word.surface
+```
+上記は、標準入力からテキストを読み込み、態素解析を行います。もし、名詞であると判断された場合には、その名詞を出力します。Map関数は、(Key, Value)を出力する必要が有ることを思い出してください。最後のprintでは、"<名詞><タブ>1"を出力しています。これは、「名詞」が一つ出てきたことを示しています。次に示すreducer.pyでは、この幾つも出来てくる"<名詞><タブ>1"というデータが<名詞>でグループ化された上で、バリューの集合が入力として与えられます。辞書ファイルのpathは、ipdicのフルパスを指定してください。形態素解析に読み込ませたいのは、スレッドの題名だけであり、3カラム目に存在しているため分割処理を最小限にし、かつ、3カラム目を取得して形態素解析ライブラリに渡しています。
+
+```python:reduce.py
+# *-* coding: utf-8 *-*
+import sys
+import codecs
+
+sys.stdin = codecs.getreader('utf-8')(sys.stdin)
+sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
+
+words = {}
+for line in sys.stdin:
+  word, count = line.split("\t")
+  words[word] = words.get(word, 0) + int(count)
+
+for word, count in words.items():
+  print "%d\t%s" % (count, word)
+```
+
+map関数の出力は、reduce関数の出力にそのまま入力されてきます。ただし、ここで重要なのは、複数のmapで処理されて出力されたwordは、必ず一つのreducerに集められるという約束があります。しかも、wordによってソートされた状態で入力にやってきます。これは、MapReduceが自動で行ってくれます。ファイルが分割されて複数のmapで処理されたとしても、wordのカウントを正しく求めることが出来るわけです。reducerでは、標準入力をタブで分離し、word, countを得ます。その後、各wordごとに足しこみを行いカウントを求めます。その後出力(count, word)を行います。このプログラムは、単に標準入出力を使っているだけであるので、ローカルでも実行できます。例えば、以下のように実行すると、wordcount結果が出力されます。
+
+```
+cat 2ch\_thread\_archive\_2006.txt | python ./scripts/mapper.py | python ./scripts/reducer.py > tmp.result
+```
+手元のマシンで実行していみると、todo:かかっています。2006年〜2014年を処理したら、とても時間がかかります。そこで、せっかくHadoop MapReduceで動作するように作成したので、AWSのElastic MapReduce(通称:EMR)を用いて処理してみましょう。EMRは、比較的簡単に、Hadoop MapReduceを動作させることが出来るようになっています。すでに、map.pyとrecduce.pyは作成済みです。あとは、EMR上でmap.pyとreduce.pyが動作するように、ipdicやigo-pythonを起動にインストールしてやれば良いことになります。
