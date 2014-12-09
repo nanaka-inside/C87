@@ -90,11 +90,11 @@ NSDictionary *advertisementData =
 
 iBeaconの距離検出機能があることは先述したとおりですが、iBeaconからの距離だけが特定できたとしても、それだけではその端末が一体どこにあるのかはわかりません。あくまでiBeaconから特的できた距離半径のどこかにいる、ということが分かるだけです。
 
-![半径の何処かに端末がある](./image/radius.png)
+![半径の何処かに端末がある](./images/radius.png)
 
 単体のiBeaconだけでは検出した距離の半径のどこかということしかわかりませんが、複数のiBeaconを組み合わせることでさらに位置を特定することができます。3つのiBeaconがあったとして、各ビーコンの位置についてはわかっている場合、あるiBeacon Aからの距離が2mでもう1つのiBeacon Bからの距離が1m、iBeacon Cからの距離が1.5mであった場合、それぞれの距離半径の円の交差する位置が端末の位置ということになります。
 
-![複数のiBeaconからの距離半径の交差点に端末がある](./image/intersection.png)
+![複数のiBeaconからの距離半径の交差点に端末がある](./images/intersection.png)
 
 このように3つ以上のiBeaconからの距離測定が*正しく*行えれば、端末の位置を測位することができるはずです。
 
@@ -222,13 +222,19 @@ self.locationManager.delegate = self;
 - (void)locationManager:(CLLocationManager *)manager
         didRangeBeacons:(NSArray *)beacons
                inRegion:(CLBeaconRegion *)region {
-    for(IDLBeacon *beacon in area.beacons) {
-        for(CLBeacon *clBeacon in beacons) {
-            if([beacon.proximityUUID isEqualToString:clBeacon.proximityUUID.UUIDString] &&
-               beacon.major == clBeacon.major.intValue &&
-               beacon.minor == clBeacon.minor.intValue) {
-                beacon.accuracy = clBeacon.accuracy;
-                beacon.rssi = clBeacon.rssi;
+    if(beacons.count > 0) {
+        // Unknown(測定不能)のiBeaconを取り除く
+        NSPredicate *predicate = [NSPredicate predicateWithFormat:@"proximity != %d", CLProximityUnknown];
+        NSArray *validBeacons = [beacons filteredArrayUsingPredicate:predicate];
+        
+        for(IDLBeacon *beacon in area.beacons) {
+            for(CLBeacon *clBeacon in validBeacons) {
+                if([beacon.proximityUUID isEqualToString:clBeacon.proximityUUID.UUIDString] &&
+                   beacon.major == clBeacon.major.intValue &&
+                   beacon.minor == clBeacon.minor.intValue) {
+                    beacon.accuracy = clBeacon.accuracy;
+                    beacon.rssi = clBeacon.rssi;
+                }
             }
         }
     }
@@ -239,14 +245,88 @@ self.locationManager.delegate = self;
 
 ## 複数のiBeaconから端末の位置を特定する
 
-円と円の直交点を計算する
+これまでの処理で各iBeaconからの端末の距離を求めることができたため、これを用いて端末がどの辺りにいるのかを求めます。各iBeaconと端末との距離を半径としiBeaconが設置してある位置をそれぞれの円の中心とすると、それぞれの円が交差する部分が出てきます。この円と円の交差を取得し、3つ以上の円が交差していた場合に、この交差の中心となる部分を円と円の交点から求めます。
+
+```
+// ビーコンから端末の位置を割り出す
+- (CGPoint)_calculateIntersectionPointWithBeacons:(NSArray *)beacons
+{
+    NSMutableArray *intersections = [NSMutableArray array];
+    for(int i = 0; i < beacons.count-1; i++) {
+        IDLBeacon *b1 = beacons[i];
+        for(int j = 0; j < beacons.count; j++) {
+            IDLBeacon *b2 = beacons[j];
+            NSArray *intersection = CircleIntersectionCircle(b1.position, b1.accuracy, b2.position, b2.accuracy);
+            if(intersection) {
+                [intersections addObject:intersection];
+            }
+        }
+    }
+    
+    if(intersections.count > 1) {
+        NSArray *line1 = intersections[0];
+        NSArray *line2 = intersections[1];
+        return LineIntersectionLine([line1[0] CGPointValue], [line1[1] CGPointValue], [line2[0] CGPointValue], [line2[1] CGPointValue]);
+    } else {
+        return CGPointZero;
+    }
+}
+
+// 中心点p1、半径r1の円と中心点p2、半径r2の円の交点を求める。なければnil
+static NSArray* CircleIntersectionCircle(CGPoint p1, CGFloat r1, CGPoint p2, CGFloat r2) {
+    CGFloat d = sqrt(pow(p2.x - p1.x, 2)+pow(p2.y - p1.y, 2));
+    
+    if ((d >= (r1 + r2)) || (d <= fabs(r1 - r2))) {
+        return nil;
+    }
+    
+    CGFloat a = (r1 * r1 - r2 * r2 + d * d) / (2 * d),
+    h = sqrt(r1 * r1 - a * a),
+    x0 = p1.x + a * (p2.x - p1.x) / d,
+    y0 = p1.y + a * (p2.y - p1.y) / d,
+    rx = -(p2.y - p1.y) * (h / d),
+    ry = -(p2.x - p1.x) * (h / d);
+    
+    return @[[NSValue valueWithCGPoint:CGPointMake(x0 + rx, y0 - ry)],
+             [NSValue valueWithCGPoint:CGPointMake(x0 - rx, y0 + ry)]];
+}
+
+// (p1,p2)、(p3,p4)の線分の交点を求める。なければCGPointZero
+static CGPoint LineIntersectionLine(CGPoint p1, CGPoint p2, CGPoint p3, CGPoint p4) {
+    CGFloat d = (p2.x - p1.x)*(p4.y - p3.y) - (p2.y - p1.y)*(p4.x - p3.x);
+    if (d == 0)
+        return CGPointZero; // parallel lines
+    CGFloat u = ((p3.x - p1.x)*(p4.y - p3.y) - (p3.y - p1.y)*(p4.x - p3.x))/d;
+    CGFloat v = ((p3.x - p1.x)*(p2.y - p1.y) - (p3.y - p1.y)*(p2.x - p1.x))/d;
+    if (u < 0.0 || u > 1.0)
+        return CGPointZero; // intersection point not between p1 and p2
+    if (v < 0.0 || v > 1.0)
+        return CGPointZero; // intersection point not between p3 and p4
+    CGPoint intersection;
+    intersection.x = p1.x + u * (p2.x - p1.x);
+    intersection.y = p1.y + u * (p2.y - p1.y);
+    
+    return intersection;
+}
+```
+
+これでうまく距離検出ができた場合に、位置測位ができるようになりました。
 
 # 実行結果
 
-電波強度が安定しないため、なかなか正しく直交点を検出できない。向きによって電波強度が変わる。。。
+さて、早速実行してみましょう。分かりやすいように画面上にiBeaconの位置、壁、iBeaconからの推定距離を表示しています。
 
-いろいろと改良が必要そう。
+![実行画面](./images/result1.png)
+
+電波強度がコロコロ変わりなかなか安定しませんが、うまく落ち着いてくれるとそこそこ正確な位置を検出してくれます。
+
+![そこそこ正しい位置が取れたパターン](./images/result2.png)
+
+しかし、極端に特定のiBeaconに近づくとそのiBeaconの円が極端に小さくなり、他のiBeaconの円との交差がなくなり、とんでもないところをさしてしまうこともあるようです。もう少し改良が必要そうですね。。。
+
+![とんでもない位置を撮ったパターン](./images/result3.png)
 
 # まとめ
 
-今回は時間がなかったため、ちょっと残念な感じになってしまったがもうちょっと頑張ればなんとかなりそう、、、な気がする。(´･_･`)
+今回はiBeaconを使った位置測位に挑戦してみました。特定状況下ではそれなりに良い結果を出すことがあるものの、電波が安定せず、実用性という意味ではまだまだといった結果となりました。さらに他の方法を検討して再度チャレンジしたいところです。
+
