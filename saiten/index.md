@@ -1,6 +1,10 @@
+Title: タイトル
+Author: @tboffice（著者名）
+
 Title: iBeaconで屋内測位してみよう
-Author: saiten
-Twitter: @saiten
+Subtitle: いつでもどこでも位置観測
+Author: @saiten
+Author(romaji): saiten
 
 どうもこんにちは。そろそろMacbook Air(2011 Mid)に限界を感じてきているsaitenです。 Retina Macbook Airが出るまでガマンガマンと思っている間に3年も使い続けてしまいました。来年には出ると良いんだけどなー。
 

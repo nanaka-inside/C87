@@ -1,8 +1,7 @@
-メトロパイパー
-
-
-偉大なる秘密結社シェルショッカーに捧ぐ
-
+Title: メトロパイパー
+Subtitle: 偉大なる秘密結社シェルショッカーに捧ぐ
+Author: @richmikan
+Author(romaji): richmikan
 
 # お前たち夏コミで洗脳されたか？
 
