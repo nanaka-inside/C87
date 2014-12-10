@@ -136,6 +136,7 @@ java -cp igo-0.4.5.jar net.reduls.igo.bin.BuildDic ipadic mecab-ipadic-2.7.0-200
 　上記により、ipdicディレクトリに辞書ファイルが作成されます。次に、map.pyとして以下のようなスクリプトを作成します。
 
 ```python:map.py
+#!/usr/bin/python
 # *-* coding: utf-8 *-*
 import sys
 import codecs
@@ -144,21 +145,27 @@ from igo.Tagger import Tagger
 sys.stdin = codecs.getreader('utf-8')(sys.stdin)
 sys.stdout = codecs.getwriter('utf-8')(sys.stdout)
 
-dic = '辞書ファイルのpath'
-tagger = Tagger(dic)
+dic = 'ipadicのパス'
 
+tagger = Tagger(dic)
 
 for line in sys.stdin:
   line.strip()
-  splited=line.split(u'\t',3)
+  splited=line.split(u'\t',9)
   subject=splited[2]
+  date=splited[6]
+  splited_date=date.split(u'-')
+  year=splited_date[0]
   words = tagger.parse(subject)
   for word in words:
     if not u"名詞" in word.feature:
       continue
-    print "%s\t1" % word.surface
+    print "%s-%s\t1" % (year, word.surface)
+ 
 ```
-　上記は、標準入力からテキストを読み込み、態素解析を行います。もし、名詞であると判断された場合には、その名詞を出力します。Map関数は、(Key, Value)を出力する必要が有ることを思い出してください。最後のprintでは、"<名詞><タブ>1"を出力しています。これは、「名詞」が一つ出てきたことを示しています。次に示すreducer.pyでは、この幾つも出来てくる"<名詞><タブ>1"というデータが<名詞>でグループ化された上で、バリューの集合が入力として与えられます。辞書ファイルのpathは、ipdicのフルパスを指定してください。形態素解析に読み込ませたいのは、スレッドの題名だけであり、3カラム目に存在しているため分割処理を最小限にし、かつ、3カラム目を取得して形態素解析ライブラリに渡しています。
+　上記は、標準入力からテキストを読み込み、態素解析を行います。もし、名詞であると判断された場合には、その名詞を出力します。Map関数は、(Key, Value)を出力する必要が有ることを思い出してください。最後のprintでは、"<名詞><タブ>1"を出力しています。また、2006年〜2014年を一度に処理させるため、keyは、年-名詞 タブ カウントとして出力しています。
+
+これは、「名詞」が一つ出てきたことを示しています。次に示すreducer.pyでは、この幾つも出来てくる"<名詞><タブ>1"というデータが<名詞>でグループ化された上で、バリューの集合が入力として与えられます。辞書ファイルのpathは、ipdicのフルパスを指定してください。形態素解析に読み込ませたいのは、スレッドの題名だけであり、3カラム目に存在しているため分割処理を最小限にし、かつ、3カラム目を取得して形態素解析ライブラリに渡しています。
 
 ```python:reduce.py
 # *-* coding: utf-8 *-*
@@ -183,6 +190,51 @@ for word, count in words.items():
 cat 2ch_thread_archive_2006.txt | python ./scripts/mapper.py | python ./scripts/reducer.py > tmp.result
 ```
 　手元のマシンで実行してみると、8時間以上かかってしまいます。2006年〜2014年を処理したら、とても時間がかかります。wordcountではそれほど急ぎませんが、良いビジネスを思いついたらスピードが命です。時間を金で買いましょう。そうです、AWSのElastic MapReduce(通称:EMR)を用いて処理してみましょう。EMRは、比較的簡単に、Hadoop MapReduceを動作させることが出来るようになっています。すでに、map.pyとrecduce.pyは作成済みです。あとは、EMR上でmap.pyとreduce.pyが動作するように、ipdicやigo-pythonを起動にインストールしてやれば良いことになります。
+
+EMRでMapReduceを開始する前段の処理を行うためのshellを以下のように用意します。
+
+```boot.sh
+#!/bin/bash
+
+# 必要なファイルをDLする
+cd /mnt/var/lib/hadoop/tmp
+hadoop fs -get s3n://nanaka/2ch/scripts/ipadic .
+
+# 実行環境を整える
+sudo easy_install igo-python
+```
+
+s3n://nanaka/2ch/scripts/ipadic は、ipadicが存在するs3上のパスを指定しています。s3は、AWSが提供しているファイル格納庫であり、EMRからシームレスにアクセスすることが可能です。s3n://nanaka/2ch/scripts/に、前述したmap.py, reduce.pyもuploadしましょう。inputデータ(2chのスレッドデータ)は、s3n://nanaka/2ch/input に配置してください。この際、gzip圧縮されたファイルであれば、EMRは自動で判別し展開してくれるのでよろしいです。
+
+AWSにアカウントを作成すると、EMRという項目があるので選択をします。色々と設定する項目がありますが、奥することはありません。重要なことはそれほど多くないです。
+|設定項目|設置値|備考|
+|--------|------|----|
+|Cluster name|お好きにどうぞ||
+|Termination protection|No|Noにしないと、インスタンスが残り続けて課金され続けてしまいます。|
+|Logging|Enabled|こうしておくと、Webから必要なログをすべて見ることができます。|
+|Log folder S3 location|s3://nanack/2ch/logs/|まあ、これもお好きにどうぞ|
+|Debugging|チェックON|こうしておくと、Webから必要なログをすべて見ることができます。|
+|Tags|お好きにどうぞ|何も設定しなくても大丈夫|
+|Hadoop distribution|Amazonの最新で||
+|Additional applications|デフォルトで入っているものは全て削除します|出ないと、起動時間がやたらとかかって、その時間分も課金されるのでお金がかかる|
+|File System Configuration|全てチェックなし||
+|Hardware Configuration|適当に選んでください。|台数増やせば金かかります。NetworkはデフォルトでOK|
+|Security and Access|お好きにどうぞ|EMR起動中に、そのインスタンスにログインしたければ設定が必要|
+|IAM Roles|デフォルトで良いです||
+|Bootstrap Actions|先ほど作成したboot.shを指定します||
+|Steps|追加してください|これがMRの設定です。詳細は、以下に続きます。|
+
+引き続き、Steps内での設定を行います
+|設定項目|設置値|備考|
+|--------|------|----|
+|Name|お好きにどうぞ||
+|Mapper|S3上にuploadしたmap.pyを指定||
+|Reducer|S3上にuploadしたreduce.pyを指定||
+|Input S3 location|Inputデータを格納したS3上のディレクトリを指定|その中にあるファイルが全て処理されます|
+|Output S3 location|お好きにどうぞ|存在しないディレクトリを指定してください。でないと、エラーになります|
+|Action on failure|Terminate|絶対にこうしましょう。クラウド破産したくなければ|
+
+さあ、いよいよCreate Clusterボタンを押すときがやって来ました。ポチッとな。あとは、EMRがよろしくやってくれます。待ちましょう。
 
 
 ## おわりに
