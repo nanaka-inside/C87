@@ -180,13 +180,14 @@ for word, count in words.items():
 　map関数の出力は、reduce関数の出力にそのまま入力されてきます。ただし、ここで重要なのは、複数のmapで処理されて出力されたwordは、必ず一つのreducerに集められるという約束があります。しかも、wordによってソートされた状態で入力にやってきます。これは、MapReduceが自動で行ってくれます。ファイルが分割されて複数のmapで処理されたとしても、wordのカウントを正しく求めることが出来るわけです。reducerでは、標準入力をタブで分離し、word, countを得ます。その後、各wordごとに足しこみを行いカウントを求めます。その後出力(count, word)を行います。このプログラムは、単に標準入出力を使っているだけであるので、ローカルでも実行できます。例えば、以下のように実行すると、wordcount結果が出力されます。
 
 ```
-cat 2ch\_thread\_archive\_2006.txt | python ./scripts/mapper.py | python ./scripts/reducer.py > tmp.result
+cat 2ch_thread_archive_2006.txt | python ./scripts/mapper.py | python ./scripts/reducer.py > tmp.result
 ```
-　手元のマシンで実行していみると、todo:かかっています。2006年〜2014年を処理したら、とても時間がかかります。そこで、せっかくHadoop MapReduceで動作するように作成したので、AWSのElastic MapReduce(通称:EMR)を用いて処理してみましょう。EMRは、比較的簡単に、Hadoop MapReduceを動作させることが出来るようになっています。すでに、map.pyとrecduce.pyは作成済みです。あとは、EMR上でmap.pyとreduce.pyが動作するように、ipdicやigo-pythonを起動にインストールしてやれば良いことになります。
+　手元のマシンで実行してみると、8時間以上かかってしまいます。2006年〜2014年を処理したら、とても時間がかかります。wordcountではそれほど急ぎませんが、良いビジネスを思いついたらスピードが命です。時間を金で買いましょう。そうです、AWSのElastic MapReduce(通称:EMR)を用いて処理してみましょう。EMRは、比較的簡単に、Hadoop MapReduceを動作させることが出来るようになっています。すでに、map.pyとrecduce.pyは作成済みです。あとは、EMR上でmap.pyとreduce.pyが動作するように、ipdicやigo-pythonを起動にインストールしてやれば良いことになります。
 
 
 ## おわりに
 
 　嫁「あーぜんぜん分からなかった。これでアフィブログが儲かるの？」
-　私「(さらに一言)」
+　私「そこまで行くには時間がかかる。だけど、サービス残業で死ぬまで働くなってゴメンだからな。そこに行くまで寝ないで頑張る。」
+　嫁「…」
 
