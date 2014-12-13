@@ -206,32 +206,124 @@ sudo easy_install igo-python
 s3n://nanaka/2ch/scripts/ipadic は、ipadicが存在するs3上のパスを指定しています。s3は、AWSが提供しているファイル格納庫であり、EMRからシームレスにアクセスすることが可能です。s3n://nanaka/2ch/scripts/に、前述したmap.py, reduce.pyもuploadしましょう。inputデータ(2chのスレッドデータ)は、s3n://nanaka/2ch/input に配置してください。この際、gzip圧縮されたファイルであれば、EMRは自動で判別し展開してくれるのでよろしいです。
 
 AWSにアカウントを作成すると、EMRという項目があるので選択をします。色々と設定する項目がありますが、奥することはありません。重要なことはそれほど多くないです。
- |設定項目|設置値|備考|
- |:--------:|:------:|:----:|
- |Cluster name|お好きにどうぞ||
- |Termination protection|No|Noにしないと、インスタンスが残り続けて課金され続けてしまいます。|
- |Logging|Enabled|こうしておくと、Webから必要なログをすべて見ることができます。|
- |Log folder S3 location|s3://nanack/2ch/logs/|まあ、これもお好きにどうぞ|
- |Debugging|チェックON|こうしておくと、Webから必要なログをすべて見ることができます。|
- |Tags|お好きにどうぞ|何も設定しなくても大丈夫|
- |Hadoop distribution|Amazonの最新で||
- |Additional applications|デフォルトで入っているものは全て削除します|出ないと、起動時間がやたらとかかって、その時間分も課金されるのでお金がかかる|
- |File System Configuration|全てチェックなし||
- |Hardware Configuration|適当に選んでください。|台数増やせば金かかります。NetworkはデフォルトでOK|
- |Security and Access|お好きにどうぞ|EMR起動中に、そのインスタンスにログインしたければ設定が必要|
- |IAM Roles|デフォルトで良いです||
- |Bootstrap Actions|先ほど作成したboot.shを指定します||
- |Steps|追加してください|これがMRの設定です。詳細は、以下に続きます。|
 
-引き続き、Steps内での設定を行います
- |設定項目|設置値|備考|
- |--------|------|----|
- |Name|お好きにどうぞ||
- |Mapper|S3上にuploadしたmap.pyを指定||
- |Reducer|S3上にuploadしたreduce.pyを指定||
- |Input S3 location|Inputデータを格納したS3上のディレクトリを指定|その中にあるファイルが全て処理されます|
- |Output S3 location|お好きにどうぞ|存在しないディレクトリを指定してください。でないと、エラーになります|
- |Action on failure|Terminate|絶対にこうしましょう。クラウド破産したくなければ|
+<table summary='表1::AWS EMRの設定項目一覧'>
+  <tr>
+     <th>設定項目</th>
+     <th>設定値</th>
+     <th>備考</th>
+  </tr>
+  <tr>
+     <td>Cluster name</td>
+     <td>何でも良いです</td>
+     <td></td>
+  </tr>
+  <tr>
+     <td>Termination protection</td>
+     <td>No</td>
+     <td>強く推奨。実行が終われば課金されません</td>
+  </tr>
+  <tr>
+     <td>Logging</td>
+     <td>Enabled</td>
+     <td>推奨。ログをWebUIから取得できます</td>
+  </tr>
+  <tr>
+     <td>Log folder S3 location</td>
+     <td>s3:path/to/</td>
+     <td>s3上のパスを指定</td>
+  </tr>
+  <tr>
+     <td>Debugging</td>
+     <td>チェックON</td>
+     <td>推奨。ログをWebUIから取得できます</td>
+  </tr>
+  <tr>
+     <td>Tags</td>
+     <td></td>
+     <td>入れても大丈夫</td>
+  </tr>
+  <tr>
+     <td>Hadoop distribution</td>
+     <td>Amazonの最新を選択</td>
+     <td></td>
+  </tr>
+  <tr>
+     <td>Additional applications</td>
+     <td>デフォルトで入っているものを全て削除</td>
+     <td>使わないのに起動時間がかかって、課金が増えてしまいます</td>
+  </tr>
+  <tr>
+     <td>File System Configuration</td>
+     <td>チェックしない</td>
+     <td></td>
+  </tr>
+  <tr>
+     <td>Hardware Configuration</td>
+     <td>タスクに合わせて選んでください</td>
+     <td></td>
+  </tr>
+  <tr>
+     <td>Security and Access</td>
+     <td></td>
+     <td>EMR起動中に、ログインしたければ必要です</td>
+  </tr>
+  <tr>
+     <td>IAM Roles</td>
+     <td>デフォルト</td>
+     <td></td>
+  </tr>
+  <tr>
+     <td>Bootstrap Actions</td>
+     <td>先ほど作成したboot.shを指定</td>
+     <td></td>
+  </tr>
+  <tr>
+     <td>Steps</td>
+     <td>追加してください</td>
+     <td>これがMRの設定です。詳細は、以下に続きます。</td>
+  </tr>
+</table>
+
+
+引き続き、Steps内での設定を行います。設定項目を以下にまとめます。
+<table summary='表1::AWS EMRの設定項目一覧'>
+  <tr>
+     <th>設定項目</th>
+     <th>設定値</th>
+     <th>備考</th>
+  </tr>
+  <tr>
+     <td>Name</td>
+     <td>自由につけてください</td>
+     <td></td>
+  </tr>
+  <tr>
+     <td>Mapper</td>
+     <td>S3上にuploadしたmap.pyを指定</td>
+     <td></td>
+  </tr>
+  <tr>
+     <td>Reducer</td>
+     <td>S3上にuploadしたreduce.pyを指定</td>
+     <td></td>
+  </tr>
+  <tr>
+     <td>Input S3 location</td>
+     <td>Inputデータを格納したS3上のディレクトリを指定</td>
+     <td>ディレクトリに有るすべてのファイルが処理されます</td>
+  </tr>
+  <tr>
+     <td>Output S3 location</td>
+     <td>出力フォルダを指定</td>
+     <td>存在しないディレクトリを指定しましょう。</td>
+  </tr>
+  <tr>
+     <td>Action on failure</td>
+     <td>Terminate</td>
+     <td>必ず、こうしましょう</td>
+  </tr>
+</table>
 
 さあ、いよいよCreate Clusterボタンを押すときがやって来ました。ポチッとな。あとは、EMRがよろしくやってくれます。待ちましょう。m1.middle x 4で実行した場合、10時間程度で終わりました。あるmapタスクが最後のほうで落ちてしまったおかげで、時間がかかっていますがうまく行っていれば5時間程度の処理だったでしょう。かかった金額は、EC2でm1.middle x 5 x 10 hours = $6.1 と、EMRで、$1くらいです。S3転送量料も含めると合計$8くらいでしょうか。ということで、ローカルでの予想処理時間64時間 - AWSでかかった時間 10時間 = 54時間を$8で買った感じになりました。
 
