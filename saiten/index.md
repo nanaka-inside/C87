@@ -1,7 +1,7 @@
 Title: タイトル
 Author: @tboffice（著者名）
 
-Title: iBeaconで屋内測位してみよう
+Title: iBeaconで簡単屋内測位
 Subtitle: いつでもどこでも位置観測
 Author: @saiten
 Author(romaji): saiten
